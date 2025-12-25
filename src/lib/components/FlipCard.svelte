@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { untrack } from "svelte";
+
   let { value } = $props();
 
-  let current = $state(value);
-  let previous = $state(value);
+  let current = $state(untrack(() => value));
+  let previous = $state(untrack(() => value));
   let animating = $state(false);
 
   // Used to force-restart animation on rapid updates

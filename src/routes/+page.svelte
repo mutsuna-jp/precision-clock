@@ -3,12 +3,14 @@
   import StandardClock from "$lib/components/StandardClock.svelte";
   import FlipClock from "$lib/components/FlipClock.svelte";
   import NixieClock from "$lib/components/NixieClock.svelte";
-  import VFDClock from "$lib/components/VFDClock.svelte"; // Add import
+  import VFDClock from "$lib/components/VFDClock.svelte";
+  import FlipDotClock from "$lib/components/FlipDotClock.svelte";
+  import MorphClock from "$lib/components/MorphClock.svelte";
 
   // 表示用の変数 (Svelte 5 Runes)
   let currentDate = $state(new Date());
   let timeZoneName = $state("");
-  let clockMode = $state("standard"); // 'standard' | 'flip' | 'nixie' | 'vfd'
+  let clockMode = $state("standard"); // 'standard' | 'flip' | 'nixie' | 'vfd' | 'flip-dot' | 'morph'
 
   // デバッグ・統計情報
   let rtt = $state(0);
@@ -142,6 +144,12 @@
         <label>
           <input type="radio" value="vfd" bind:group={clockMode} /> VFD
         </label>
+        <label>
+          <input type="radio" value="flip-dot" bind:group={clockMode} /> Flip Dot
+        </label>
+        <label>
+          <input type="radio" value="morph" bind:group={clockMode} /> Morph
+        </label>
       </div>
 
       <div class="clock-display-area">
@@ -153,6 +161,10 @@
           <NixieClock now={currentDate} />
         {:else if clockMode === "vfd"}
           <VFDClock now={currentDate} />
+        {:else if clockMode === "flip-dot"}
+          <FlipDotClock now={currentDate} />
+        {:else if clockMode === "morph"}
+          <MorphClock now={currentDate} />
         {/if}
       </div>
 
