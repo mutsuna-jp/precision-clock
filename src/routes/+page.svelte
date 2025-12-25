@@ -3,11 +3,12 @@
   import StandardClock from "$lib/components/StandardClock.svelte";
   import FlipClock from "$lib/components/FlipClock.svelte";
   import NixieClock from "$lib/components/NixieClock.svelte";
+  import VFDClock from "$lib/components/VFDClock.svelte"; // Add import
 
   // 表示用の変数 (Svelte 5 Runes)
   let currentDate = $state(new Date());
   let timeZoneName = $state("");
-  let clockMode = $state("standard"); // 'standard' | 'flip'
+  let clockMode = $state("standard"); // 'standard' | 'flip' | 'nixie' | 'vfd'
 
   // デバッグ・統計情報
   let rtt = $state(0);
@@ -138,6 +139,9 @@
         <label>
           <input type="radio" value="nixie" bind:group={clockMode} /> Nixie
         </label>
+        <label>
+          <input type="radio" value="vfd" bind:group={clockMode} /> VFD
+        </label>
       </div>
 
       <div class="clock-display-area">
@@ -147,6 +151,8 @@
           <FlipClock now={currentDate} />
         {:else if clockMode === "nixie"}
           <NixieClock now={currentDate} />
+        {:else if clockMode === "vfd"}
+          <VFDClock now={currentDate} />
         {/if}
       </div>
 
