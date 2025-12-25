@@ -56,18 +56,22 @@
         clearTimeout(timeoutId);
 
         const serverTs = result.serverTime;
+        const processingTime = result.processingTime || 0;
         if (result.source) syncSource = result.source;
 
         const t1 = performance.now();
-        const sampleRtt = t1 - t0;
+        // 全体の所要時間から、サーバー内部での外部API待ち時間(processingTime)を引いたものが
+        // 純粋なネットワーク往復時間 (NetRTT)
+        const totalDuration = t1 - t0;
+        const netRtt = Math.max(0, totalDuration - processingTime);
 
         // 応答受信時点(t1)での推定サーバー時刻
-        // サーバー側での処理時間を無視できると仮定 (Edge Runtimeなら高速)
-        const serverTimeAtT1 = serverTs + sampleRtt / 2;
+        // サーバー時刻(serverTs) + 復路の通信時間(NetRTT / 2)
+        const serverTimeAtT1 = serverTs + netRtt / 2;
         const sampleOffset = serverTimeAtT1 - Date.now();
 
         samples.push({
-          rtt: sampleRtt,
+          rtt: totalDuration, // 表示用には全体時間を残すか、netRttにするかは選択。ここでは全体を残す
           serverTimeAtT1,
           t1,
           offset: sampleOffset,
