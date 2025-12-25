@@ -155,7 +155,7 @@
           </span>
         </div>
         <div class="stat-item">
-          <span class="label">OFFSET</span>
+          <span class="label">OFFSET (SERVER - LOCAL)</span>
           <span class="value">
             {offset > 0 ? "+" : ""}{offset.toFixed(1)}<small>ms</small>
           </span>
