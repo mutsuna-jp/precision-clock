@@ -33,7 +33,7 @@
       t1: number;
       offset: number;
     }[] = [];
-    const numSamples = 5;
+    const numSamples = 10;
 
     // ウォームアップ
     try {
@@ -51,11 +51,13 @@
         const response = await fetch(`/api/time?t=${Date.now()}`, {
           signal: controller.signal,
         });
+        // ヘッダー受信完了時点をt1とする（ボディのDL/パース時間をRTTに含めない）
+        const t1 = performance.now();
+
         const result = await response.json();
         clearTimeout(timeoutId);
 
         const serverTs = result.serverTime;
-        const t1 = performance.now();
         const sampleRtt = t1 - t0;
 
         // 応答受信時点(t1)での推定サーバー時刻
