@@ -103,7 +103,16 @@
       [0, 0, 1, 0, 0],
       [0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0],
-    ], // Simplified colon
+    ],
+    " ": [
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+    ],
   };
 
   let grid = $state<number[][]>(
@@ -218,10 +227,7 @@
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(7, 1fr);
     gap: 2px;
-    padding: 4px;
-    background: #111;
-    border-radius: 4px;
-    /* Box shadow or bezel can be added in the clock container */
+    /* Removed background/padding to blend into parent */
   }
 
   .dot-container {

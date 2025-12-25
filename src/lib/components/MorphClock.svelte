@@ -10,6 +10,9 @@
   let hDigits = $derived(split(now.getHours()));
   let mDigits = $derived(split(now.getMinutes()));
   let sDigits = $derived(split(now.getSeconds()));
+
+  // Blink every second: 0-500ms = shown, 500-1000ms = hidden (morphed to center/off)
+  let colonState = $derived(now.getMilliseconds() < 500 ? ":" : "off");
 </script>
 
 <div class="morph-clock-container">
@@ -36,14 +39,24 @@
     <MorphDigit value={hDigits[1]} color="#4facfe" />
   </div>
 
-  <div class="colon">:</div>
+  <MorphDigit
+    value={colonState}
+    color="rgba(255, 255, 255, 0.5)"
+    width="40px"
+    viewBox="30 0 40 130"
+  />
 
   <div class="group">
     <MorphDigit value={mDigits[0]} color="#00f2fe" />
     <MorphDigit value={mDigits[1]} color="#00f2fe" />
   </div>
 
-  <div class="colon">:</div>
+  <MorphDigit
+    value={colonState}
+    color="rgba(255, 255, 255, 0.5)"
+    width="40px"
+    viewBox="30 0 40 130"
+  />
 
   <div class="group">
     <MorphDigit value={sDigits[0]} color="#43e97b" />
@@ -58,26 +71,12 @@
     justify-content: center;
     gap: 15px;
     padding: 20px;
-    background: #000;
     border-radius: 20px;
-    /* Glassmorphism background */
-    background: rgba(20, 20, 20, 0.6);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 30px rgba(0, 200, 255, 0.2);
   }
 
   .group {
     display: flex;
     gap: 5px;
-  }
-
-  .colon {
-    font-size: 60px;
-    font-weight: 100;
-    color: rgba(255, 255, 255, 0.3);
-    margin: 0 5px;
-    padding-bottom: 20px;
-    font-family: "Segoe UI", sans-serif;
   }
 </style>

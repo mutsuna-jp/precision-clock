@@ -3,7 +3,7 @@
 const POINTS_PER_DIGIT = 36; // 18 -> 36 に倍増
 
 // 座標生成ヘルパー
-function generatePoints(digit: number): number[][] {
+function generatePoints(digit: number | string): number[][] {
   const points: number[][] = [];
   
   // 基本グリッド: 100x130
@@ -87,6 +87,17 @@ function generatePoints(digit: number): number[][] {
       addArc(50, 88, 35, 32, 270, 520, 20);
       break;
 
+    case 4:
+      // 4: 左上の斜め/縦 -> 真ん中の横 -> 右の縦
+      // 右縦: (80, 15) -> (80, 115) : 14点
+      // 真ん中横: (15, 80) -> (80, 80) : 10点
+      // 左上: (60, 15) -> (15, 80) : 12点
+      addLine(65, 15, 15, 75, 12);
+      addLine(15, 75, 80, 75, 10);
+      addLine(80, 15, 80, 115, 14);
+      break;
+
+
     case 5:
       // 5: 上横棒 -> 左縦 -> 下アーチ
       // 上横(8) + 左縦(6) + 下アーチ(22)
@@ -133,6 +144,21 @@ function generatePoints(digit: number): number[][] {
       addQuad(85, 70, 80, 120, 30, 110, 10);
       break;
       
+    case ':':
+      // コロン: 上と下の丸
+      // 点の数: 18 + 18
+      addArc(50, 35, 8, 8, 0, 360, 18);
+      addArc(50, 95, 8, 8, 0, 360, 18);
+      break;
+
+    case 'off':
+    case ' ':
+      // 消灯状態: 真ん中に集めるか、少しばらすか
+      // 液体っぽく消えるには、中心に吸い込まれる感じ
+      addArc(50, 65, 2, 2, 0, 360, POINTS_PER_DIGIT);
+      break;
+
+      
     // デフォルト: 0
     default:
       addArc(50, 65, 35, 50, -90, 270, POINTS_PER_DIGIT); 
@@ -154,4 +180,18 @@ function generatePoints(digit: number): number[][] {
 }
 
 // 事前生成してエクスポート
+// 事前生成してエクスポート
 export const DIGIT_PARTICLES = [0,1,2,3,4,5,6,7,8,9].map(generatePoints);
+
+// 個別のヘルパー
+export function getMorphParticles(val: string | number) {
+    if (val === ':' || val === 'off' || val === ' ') {
+        return generatePoints(val);
+    }
+    const n = parseInt(val.toString());
+    if (!isNaN(n) && DIGIT_PARTICLES[n]) {
+        return DIGIT_PARTICLES[n];
+    }
+    return DIGIT_PARTICLES[0];
+}
+

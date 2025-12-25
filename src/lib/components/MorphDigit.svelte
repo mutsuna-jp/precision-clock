@@ -1,29 +1,28 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import { spring } from "svelte/motion";
-  import { DIGIT_PARTICLES } from "./morphData";
+  import { getMorphParticles } from "./morphData";
 
-  let { value, color = "#00eaff" } = $props();
-
-  // Helper to get particles for a value (string or number) safely
-  function getParticles(val: string | number) {
-    const idx = parseInt(val.toString()) || 0;
-    return DIGIT_PARTICLES[idx] || DIGIT_PARTICLES[0];
-  }
+  let {
+    value,
+    color = "#00eaff",
+    width = "100px",
+    viewBox = "0 0 100 130",
+  } = $props();
 
   // Initialize spring with the starting value
-  const coords = spring(getParticles(untrack(() => value)), {
+  const coords = spring(getMorphParticles(untrack(() => value)), {
     stiffness: 0.08, // Slightly faster to be noticeable
     damping: 0.4, // Less bouncy, more liquid
   });
 
   // Reactive effect to update spring target when value changes
   $effect(() => {
-    coords.set(getParticles(value));
+    coords.set(getMorphParticles(value));
   });
 </script>
 
-<svg viewBox="0 0 100 130" class="digit-svg">
+<svg {viewBox} class="digit-svg" style="width: {width};">
   <!-- Use the global filter defined in MorphClock.svelte -->
   <g filter="url(#morph-goo)" style="fill: {color}">
     {#each $coords as [x, y], i (i)}

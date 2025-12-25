@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import FlipDotDigit from "./FlipDotDigit.svelte";
 
   let { now } = $props();
@@ -10,6 +11,31 @@
   let hDigits = $derived(split(now.getHours()));
   let mDigits = $derived(split(now.getMinutes()));
   let sDigits = $derived(split(now.getSeconds()));
+
+  let colonValue = $state(":");
+
+  onMount(() => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    function scheduleNext() {
+      // Random interval between 2000ms and 8000ms
+      const delay = 2000 + Math.random() * 6000;
+      timer = setTimeout(() => {
+        colonValue = " ";
+        // Blink duration 150ms
+        setTimeout(() => {
+          colonValue = ":";
+          scheduleNext();
+        }, 150);
+      }, delay);
+    }
+
+    scheduleNext();
+
+    return () => {
+      clearTimeout(timer);
+    };
+  });
 </script>
 
 <div class="flip-dot-clock-container">
@@ -17,21 +43,12 @@
     <FlipDotDigit value={hDigits[0]} />
     <FlipDotDigit value={hDigits[1]} />
   </div>
-  <!-- Colon: Just use a generic separator or a special specific dot pattern? 
-       Usually colons are also dots. Let's use FlipDotDigit with ":" value if supported, 
-       or just a visual spacer. -->
-  <div class="colon">
-    <div class="dot active"></div>
-    <div class="dot active"></div>
-  </div>
+  <FlipDotDigit value={colonValue} />
   <div class="group">
     <FlipDotDigit value={mDigits[0]} />
     <FlipDotDigit value={mDigits[1]} />
   </div>
-  <div class="colon">
-    <div class="dot active"></div>
-    <div class="dot active"></div>
-  </div>
+  <FlipDotDigit value={colonValue} />
   <div class="group">
     <FlipDotDigit value={sDigits[0]} />
     <FlipDotDigit value={sDigits[1]} />
@@ -43,38 +60,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    padding: 20px;
-    background: #252525;
-    border-radius: 10px;
-    box-shadow: inset 0 0 10px #000;
+    gap: 4px;
+    padding: 12px;
+    background: #111;
+    border-radius: 8px;
+    box-shadow:
+      0 4px 15px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(0, 0, 0, 0.8);
+    border: 4px solid #2a2a2a;
   }
 
   .group {
     display: flex;
     gap: 4px;
-    background: #000;
-    padding: 4px;
-    border-radius: 4px;
-  }
-
-  .colon {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: center;
-    padding: 0 4px;
-  }
-
-  .dot {
-    width: 8px;
-    height: 8px;
-    background: #1a1a1a;
-    border-radius: 50%;
-  }
-
-  .dot.active {
-    background: #ccff00;
-    box-shadow: 0 0 5px #ccff00;
   }
 </style>
