@@ -9,12 +9,11 @@
   let msString = $state("000");
   let timeZoneName = $state("");
 
-  // デバッグ・統計情報（ポートフォリオとして見せるための数値）
-  let rtt = $state(0); // 往復時間 (Round-Trip Time)
-  let offset = $state(0); // サーバーとのズレ
+  // デバッグ・統計情報
+  let rtt = $state(0);
+  let offset = $state(0);
   let isSyncing = $state(false);
   let lastSyncAt = $state<Date | null>(null);
-  let syncSource = $state("Initializing...");
 
   // 高精度タイマー用の変数
   let lastSyncServerTime = $state(0);
@@ -23,7 +22,7 @@
   let animationFrameId: number;
   let timerInterval: any;
 
-  // 時刻同期関数 (NTPアルゴリズムの改良版)
+  // 時刻同期関数
   async function syncTime() {
     if (isSyncing) return;
     isSyncing = true;
@@ -36,7 +35,7 @@
     }[] = [];
     const numSamples = 5;
 
-    // ウォームアップ（コールドスタート対策）: 最初の1回は計測せずに捨てる
+    // ウォームアップ
     try {
       await fetch(`/api/time?t=${Date.now()}`, { method: "HEAD" }).catch(
         () => {},
@@ -46,7 +45,7 @@
     for (let i = 0; i < numSamples; i++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒でタイムアウト
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         const t0 = performance.now();
         const response = await fetch(`/api/time?t=${Date.now()}`, {
@@ -56,22 +55,15 @@
         clearTimeout(timeoutId);
 
         const serverTs = result.serverTime;
-        const processingTime = result.processingTime || 0;
-        if (result.source) syncSource = result.source;
-
         const t1 = performance.now();
-        // 全体の所要時間から、サーバー内部での外部API待ち時間(processingTime)を引いたものが
-        // 純粋なネットワーク往復時間 (NetRTT)
-        const totalDuration = t1 - t0;
-        const netRtt = Math.max(0, totalDuration - processingTime);
+        const sampleRtt = t1 - t0;
 
         // 応答受信時点(t1)での推定サーバー時刻
-        // サーバー時刻(serverTs) + 復路の通信時間(NetRTT / 2)
-        const serverTimeAtT1 = serverTs + netRtt / 2;
+        const serverTimeAtT1 = serverTs + sampleRtt / 2;
         const sampleOffset = serverTimeAtT1 - Date.now();
 
         samples.push({
-          rtt: totalDuration, // 表示用には全体時間を残すか、netRttにするかは選択。ここでは全体を残す
+          rtt: sampleRtt,
           serverTimeAtT1,
           t1,
           offset: sampleOffset,
@@ -92,7 +84,6 @@
       rtt = bestSample.rtt;
       offset = bestSample.offset;
 
-      // モノトニックタイマー（performance.now）ベースの基準点を更新
       lastSyncServerTime = bestSample.serverTimeAtT1;
       lastSyncLocalPerfTime = bestSample.t1;
       lastSyncAt = new Date();
@@ -101,20 +92,17 @@
     isSyncing = false;
   }
 
-  // 描画ループ (requestAnimationFrame)
+  // 描画ループ
   function update() {
     let now: Date;
 
     if (lastSyncServerTime > 0) {
-      // システム時刻の変動に影響されない performance.now() をベースに計算
       const elapsedSinceSync = performance.now() - lastSyncLocalPerfTime;
       now = new Date(lastSyncServerTime + elapsedSinceSync);
     } else {
-      // 同期前はローカル時刻を使用
       now = new Date();
     }
 
-    // 表示の整形
     const h = now.getHours().toString().padStart(2, "0");
     const m = now.getMinutes().toString().padStart(2, "0");
     const s = now.getSeconds().toString().padStart(2, "0");
@@ -127,18 +115,13 @@
   }
 
   onMount(() => {
-    // 初回同期とループ開始
     timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    // SSRで取得したサーバー時刻で暫定初期化
-    // (ハイドレーション時点の performance.now を基準にする)
-    lastSyncServerTime = data.serverTime;
     lastSyncLocalPerfTime = performance.now();
+    // Server time init is handled by initial sync or just starting from 0
+    lastSyncServerTime = 0;
 
     syncTime();
     update();
-
-    // 1分ごとに再同期して、PC時計のズレ（ドリフト）を修正
     timerInterval = setInterval(syncTime, 60000);
   });
 
@@ -158,7 +141,7 @@
         <span class="ms">.{msString}</span>
       </div>
       <div class="timezone-info">
-        TIMEZONE: {timeZoneName} / SOURCE: {syncSource}
+        TIMEZONE: {timeZoneName}
       </div>
 
       <div class="stats">
@@ -260,6 +243,7 @@
     padding-bottom: 0.5rem;
     width: 100%;
     text-align: center;
+    margin-top: 0;
   }
 
   .display {
@@ -309,6 +293,7 @@
   .value {
     font-weight: bold;
     color: #888;
+    font-size: 0.8rem;
   }
 
   .value.good {
@@ -330,11 +315,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    border-radius: 0;
   }
 
   .sync-btn:hover:not(:disabled) {
     border-color: #ff3e00;
     color: #fff;
+    background: none;
   }
 
   .sync-btn:disabled {
@@ -373,7 +360,6 @@
     margin-bottom: 1rem;
     letter-spacing: 0.1rem;
   }
-
   .explanation-card {
     width: 100%;
     padding: 1.5rem;
