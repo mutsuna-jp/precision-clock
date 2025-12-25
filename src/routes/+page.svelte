@@ -6,6 +6,7 @@
   import VFDClock from "$lib/components/VFDClock.svelte";
   import FlipDotClock from "$lib/components/FlipDotClock.svelte";
   import MorphClock from "$lib/components/MorphClock.svelte";
+  import WheelClock from "$lib/components/WheelClock.svelte";
 
   // 表示用の変数 (Svelte 5 Runes)
   let currentDate = $state(new Date());
@@ -150,6 +151,9 @@
         <label>
           <input type="radio" value="morph" bind:group={clockMode} /> Morph
         </label>
+        <label>
+          <input type="radio" value="wheel" bind:group={clockMode} /> Wheel
+        </label>
       </div>
 
       <div class="clock-display-area">
@@ -165,6 +169,8 @@
           <FlipDotClock now={currentDate} />
         {:else if clockMode === "morph"}
           <MorphClock now={currentDate} />
+        {:else if clockMode === "wheel"}
+          <WheelClock now={currentDate} />
         {/if}
       </div>
 
