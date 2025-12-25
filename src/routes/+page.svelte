@@ -41,7 +41,7 @@
         const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒でタイムアウト
 
         const t0 = performance.now();
-        const response = await fetch("/api/time", {
+        const response = await fetch(`/api/time?t=${Date.now()}`, {
           signal: controller.signal,
         });
         const result = await response.json();
