@@ -157,6 +157,12 @@
             {offset > 0 ? "+" : ""}{offset.toFixed(1)}<small>ms</small>
           </span>
         </div>
+        <div class="stat-item">
+          <span class="label">ACCURACY</span>
+          <span class="value" class:good={rtt < 100} class:warn={rtt >= 100}>
+            ±{(rtt / 2).toFixed(1)}<small>ms</small>
+          </span>
+        </div>
         <div class="sync-controls">
           <button class="sync-btn" onclick={syncTime} disabled={isSyncing}>
             {#if isSyncing}
@@ -186,6 +192,14 @@
       <h3>OFFSET & SSR</h3>
       <p>
         サーバー時刻とローカル時刻の差分です。本アプリはSSR（サーバーサイドレンダリング）時に初期時刻を取得するため、ページ読み込み直後から正確な時刻を表示します。同期後はシステム時計の変動に影響されない高精度なモノトニックタイマー（performance.now）を使用して時刻を刻み、1分ごとの自動再同期によってPC時計のドリフト（微小なズレ）を継続的に補正します。
+      </p>
+    </div>
+    <div class="explanation-item">
+      <h3>ACCURACY</h3>
+      <p>
+        同期の正確さ（不確かさ）を示す指標です。通信往復時間（RTT）の半分を最大誤差範囲として
+        ± で表示しています。time.is
+        などと同様の指標であり、この数値が小さいほど、表示されている時刻が協定世界時（UTC）に近いことを意味します。
       </p>
     </div>
     <div class="explanation-item">
