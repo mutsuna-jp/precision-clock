@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import FlipDotDigit from "./FlipDotDigit.svelte";
+  import FlipDotSpacer from "./FlipDotSpacer.svelte";
 
   let { now } = $props();
 
@@ -41,16 +42,19 @@
 <div class="flip-dot-clock-container">
   <div class="group">
     <FlipDotDigit value={hDigits[0]} />
+    <FlipDotSpacer />
     <FlipDotDigit value={hDigits[1]} />
   </div>
   <FlipDotDigit value={colonValue} />
   <div class="group">
     <FlipDotDigit value={mDigits[0]} />
+    <FlipDotSpacer />
     <FlipDotDigit value={mDigits[1]} />
   </div>
   <FlipDotDigit value={colonValue} />
   <div class="group">
     <FlipDotDigit value={sDigits[0]} />
+    <FlipDotSpacer />
     <FlipDotDigit value={sDigits[1]} />
   </div>
 </div>
@@ -60,7 +64,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
     padding: 12px;
     background: #111;
     border-radius: 8px;
@@ -72,6 +76,6 @@
 
   .group {
     display: flex;
-    gap: 4px;
+    gap: 2px;
   }
 </style>

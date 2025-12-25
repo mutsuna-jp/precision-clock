@@ -134,6 +134,33 @@
     } catch (e) {
       console.warn("AudioContext not supported");
     }
+
+    // Random noise loop (idle fluttering)
+    // Simulates mechanical "breath" or glitches
+    let noiseTimer: ReturnType<typeof setTimeout>;
+
+    function scheduleNoise() {
+      // Random interval: 5 to 20 seconds per digit
+      const interval = 5000 + Math.random() * 15000;
+
+      noiseTimer = setTimeout(() => {
+        // Pick a random dot
+        const r = Math.floor(Math.random() * 7);
+        const c = Math.floor(Math.random() * 5);
+
+        // Trigger a flutter on this dot
+        triggerFlutter(r, c);
+
+        // Schedule next
+        scheduleNoise();
+      }, interval);
+    }
+
+    scheduleNoise();
+
+    return () => {
+      clearTimeout(noiseTimer);
+    };
   });
 
   function playFlipSound() {
@@ -169,33 +196,75 @@
   }
 
   $effect(() => {
-    // When value changes, update grid
-    // But we want to do it in a way that respects the animation capabilities
-    // The visual bindings will handle the flipping if we pass the new state
-    const newPattern = font[value] || font["0"];
+    // Clone the font pattern so we can mutate grid independently (for flutter)
+    // font is static, so we can access it directly.
+    const patternRef = font[value] || font["0"];
+    const newGrid = patternRef.map((row) => [...row]); // Deep clone
 
-    // Check which dots are changing to play sound
-    let changed = false;
+    // Detect changes
+    const changes: { r: number; c: number }[] = [];
     for (let r = 0; r < 7; r++) {
       for (let c = 0; c < 5; c++) {
-        if (grid[r][c] !== newPattern[r][c]) {
-          changed = true;
-          // Ideally playing sound per dot is too heavy/noisy, so we play a few random ones or just one "cluster" sound
+        if (grid[r][c] !== newGrid[r][c]) {
+          changes.push({ r, c });
         }
       }
     }
 
-    if (changed) {
-      // Play a sound with a slight random characteristic
-      // Or play multiple small sounds for "para-para" effect?
-      // Let's try to just update the grid and let CSS delays handle the visual "wave"
-      // For sound, maybe just one trigger per digit change is cleaner for web.
-      // OR better: trigger a few sounds randomly
+    if (changes.length > 0) {
       playFlipSound();
       setTimeout(playFlipSound, 30); // Echo
-      grid = newPattern;
+
+      // Update main grid immediately
+      grid = newGrid;
+
+      // Trigger flutters (mechanical bounce/chatter)
+      changes.forEach(({ r, c }) => {
+        // 10% chance to flutter
+        if (Math.random() < 0.1) {
+          triggerFlutter(r, c);
+        }
+      });
     }
   });
+
+  function triggerFlutter(r: number, c: number) {
+    // Wait for the main flip (approx 200-300ms)
+    // Then flip to "wrong" state briefly, then back to "correct" state
+    const delay = 250 + Math.random() * 150;
+
+    setTimeout(() => {
+      // Determine what the dot SHOULD be right now (in case it changed again)
+      const currentPattern = font[value] || font["0"];
+      const targetVal = currentPattern[r][c];
+      const inverseVal = targetVal === 1 ? 0 : 1;
+
+      // 1. Flip to inverse (bounce)
+      grid[r][c] = inverseVal;
+      // Play a small extra click sound for flutter? Maybe too noisy.
+
+      setTimeout(() => {
+        // 2. Flip back to target
+        const currentPattern2 = font[value] || font["0"];
+        grid[r][c] = currentPattern2[r][c];
+
+        // 3. Occasionally (30%) do one more bounce
+        if (Math.random() < 0.3) {
+          setTimeout(() => {
+            const currentPattern3 = font[value] || font["0"];
+            const targetVal3 = currentPattern3[r][c];
+            const inverseVal3 = targetVal3 === 1 ? 0 : 1;
+
+            grid[r][c] = inverseVal3;
+
+            setTimeout(() => {
+              grid[r][c] = targetVal3;
+            }, 120);
+          }, 120);
+        }
+      }, 150); // Duration of the "wrong" state
+    }, delay);
+  }
 </script>
 
 <div class="matrix">
