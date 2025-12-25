@@ -35,6 +35,13 @@
     }[] = [];
     const numSamples = 5;
 
+    // ウォームアップ（コールドスタート対策）: 最初の1回は計測せずに捨てる
+    try {
+      await fetch(`/api/time?t=${Date.now()}`, { method: "HEAD" }).catch(
+        () => {},
+      );
+    } catch {}
+
     for (let i = 0; i < numSamples; i++) {
       try {
         const controller = new AbortController();
