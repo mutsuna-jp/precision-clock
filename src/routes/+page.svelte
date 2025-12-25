@@ -14,6 +14,7 @@
   let offset = $state(0); // サーバーとのズレ
   let isSyncing = $state(false);
   let lastSyncAt = $state<Date | null>(null);
+  let syncSource = $state("Initializing...");
 
   // 高精度タイマー用の変数
   let lastSyncServerTime = $state(0);
@@ -55,6 +56,8 @@
         clearTimeout(timeoutId);
 
         const serverTs = result.serverTime;
+        if (result.source) syncSource = result.source;
+
         const t1 = performance.now();
         const sampleRtt = t1 - t0;
 
@@ -151,7 +154,7 @@
         <span class="ms">.{msString}</span>
       </div>
       <div class="timezone-info">
-        TIMEZONE: {timeZoneName}
+        TIMEZONE: {timeZoneName} / SOURCE: {syncSource}
       </div>
 
       <div class="stats">
