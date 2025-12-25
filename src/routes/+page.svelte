@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { invalidateAll } from "$app/navigation";
-
-  let { data } = $props();
+  import StandardClock from "$lib/components/StandardClock.svelte";
+  import FlipClock from "$lib/components/FlipClock.svelte";
+  import NixieClock from "$lib/components/NixieClock.svelte";
 
   // 表示用の変数 (Svelte 5 Runes)
-  let timeString = $state("00:00:00");
-  let msString = $state("000");
+  let currentDate = $state(new Date());
   let timeZoneName = $state("");
+  let clockMode = $state("standard"); // 'standard' | 'flip'
 
   // デバッグ・統計情報
   let rtt = $state(0);
@@ -96,22 +96,12 @@
 
   // 描画ループ
   function update() {
-    let now: Date;
-
     if (lastSyncServerTime > 0) {
       const elapsedSinceSync = performance.now() - lastSyncLocalPerfTime;
-      now = new Date(lastSyncServerTime + elapsedSinceSync);
+      currentDate = new Date(lastSyncServerTime + elapsedSinceSync);
     } else {
-      now = new Date();
+      currentDate = new Date();
     }
-
-    const h = now.getHours().toString().padStart(2, "0");
-    const m = now.getMinutes().toString().padStart(2, "0");
-    const s = now.getSeconds().toString().padStart(2, "0");
-    const ms = now.getMilliseconds().toString().padStart(3, "0");
-
-    timeString = `${h}:${m}:${s}`;
-    msString = ms;
 
     animationFrameId = requestAnimationFrame(update);
   }
@@ -138,12 +128,26 @@
     <div class="clock-wrapper">
       <h1 class="brand">PRECISION CLOCK</h1>
 
-      <div class="display">
-        <span class="time">{timeString}</span>
-        <span class="ms">.{msString}</span>
+      <div class="mode-selector">
+        <label>
+          <input type="radio" value="standard" bind:group={clockMode} /> Standard
+        </label>
+        <label>
+          <input type="radio" value="flip" bind:group={clockMode} /> Flip
+        </label>
+        <label>
+          <input type="radio" value="nixie" bind:group={clockMode} /> Nixie
+        </label>
       </div>
-      <div class="timezone-info">
-        TIMEZONE: {timeZoneName}
+
+      <div class="clock-display-area">
+        {#if clockMode === "standard"}
+          <StandardClock now={currentDate} {timeZoneName} />
+        {:else if clockMode === "flip"}
+          <FlipClock now={currentDate} />
+        {:else if clockMode === "nixie"}
+          <NixieClock now={currentDate} />
+        {/if}
       </div>
 
       <div class="stats">
@@ -262,20 +266,32 @@
     margin-top: 0;
   }
 
-  .display {
-    font-variant-numeric: tabular-nums; /* 数字の幅を固定 */
-    margin: 1rem 0;
+  .mode-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.8rem;
+    color: #888;
   }
 
-  .time {
-    font-size: 4rem;
-    font-weight: 700;
-    color: #e0e0e0;
+  .mode-selector label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
   }
 
-  .ms {
-    font-size: 2rem;
-    color: #ff3e00; /* Svelteカラー */
+  .mode-selector input {
+    accent-color: #ff3e00;
+  }
+
+  .clock-display-area {
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
   }
 
   .stats {
@@ -369,13 +385,6 @@
     letter-spacing: 0.05rem;
   }
 
-  .timezone-info {
-    font-size: 0.7rem;
-    color: #444;
-    margin-top: -0.5rem;
-    margin-bottom: 1rem;
-    letter-spacing: 0.1rem;
-  }
   .explanation-card {
     width: 100%;
     padding: 1.5rem;
